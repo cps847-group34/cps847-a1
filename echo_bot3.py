@@ -33,6 +33,27 @@ spell = SpellChecker()
 nlp = spacy.load("en_core_web_sm")
 
 
+def cityname(sentence):
+    long = spell.split_words(sentence)
+    count = 0
+    for word in long:
+        can = spell.candidates(word)
+        change = None
+        # print(can)
+        if len(can) > 1:
+            for w in can:
+                doc = nlp(w.title())
+                for ent in doc.ents:
+                    print(ent.text, ent.label_)
+                    if ent.label_ == "GPE":
+                        change = w.title()
+        if change != None:
+            long[count] = change
+        count += 1
+    print(long)
+    long = [spell.correction(word) for word in long]
+    print(long)
+    return long
 
 def setup():
     driver = webdriver.Chrome()
