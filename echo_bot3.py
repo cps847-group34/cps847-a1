@@ -72,10 +72,6 @@ def message(payload):
     user_id = event.get('user')
     text = event.get('text')
 
-    str = re.findall("[a-zA-Z,.]+", text)
-    updated_text = (" ".join(str))
-    misspelled = spell.unknown(str)
-
     value = cityname(text)
     city_list = []
     
@@ -83,19 +79,6 @@ def message(payload):
         city_list.append(value[1][0])
 
     is_weather = 0
-
-    if len(misspelled) > 0:
-        new_doc = TextBlob(updated_text)
-        tb = new_doc.correct()
-        s = ''
-        result = (s.join(tb))
-        print(result)
-        doc = nlp(result)
-        result_dict = {}
-        for ent in doc.ents:
-            result_dict[ent.text] = ent.label_
-        city_list = [k for k, v in result_dict.items() if v == 'GPE']
-        print('result ', result, 'city list', city_list)
 
     if len(city_list) != 0:
         corrected_OWN_URL = f"https://api.openweathermap.org/data/2.5/weather?q={city_list[0]}&units=metric&appid={OWM_API}"
@@ -105,19 +88,14 @@ def message(payload):
             curr_weather = corrected_response.json()['weather']
             curr_temp = corrected_response.json()['main']
             weather_response = f"The current temperature in {city_list[0]} is {curr_temp['temp']} C, {curr_weather[0]['main']}, {curr_weather[0]['description']}."
-            result = ""
-            result_dict.clear()
             city_list = []
 
     if BOT_ID != user_id:
         if is_weather == 1:
             is_weather = 0
             client.chat_postMessage(channel=channel_id, text=weather_response)
-            return 0
-
         else:
             client.chat_postMessage(channel=channel_id, text=text)
-            return 0
 
 
 if __name__ == "__main__":
